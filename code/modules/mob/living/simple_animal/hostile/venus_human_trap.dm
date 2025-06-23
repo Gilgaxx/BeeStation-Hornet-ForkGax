@@ -149,14 +149,24 @@
 	if(locate(/obj/structure/spacevine) in get_turf(src))//Heal if we are on vines
 		if(withering)
 			to_chat(src, span_notice(" The vines nourish you, healing your wounds."))
-		adjustHealth(-maxHealth*0.05)
+			stop_automated_movement = 0
+		adjustHealth(-maxHealth*0.1)
 		withering = FALSE
 		return
 	if(!withering)
 		to_chat(src, span_userdanger("You are not being nourished by the vines and are withering away! Stay in the vines!"))
 	withering = TRUE
+	if(!ckey && (health < maxHealth * 0.50) && !(locate(/obj/structure/spacevine) in get_turf(src))) //Retreat!!!
+		var/list/turf/possible_retreat_turfs = list()
+		FOR_DVIEW(var/turf/T, 8, get_turf(src), null)
+			if(locate(/obj/structure/spacevine) in T)
+				possible_retreat_turfs += T
+		if(possible_retreat_turfs.len > 0)
+			LoseTarget()
+			stop_automated_movement = 1
+			Goto(possible_retreat_turfs[rand(0,possible_retreat_turfs.len)], move_to_delay, 0)
 	playsound(src.loc, 'sound/creatures/venus_trap_hurt.ogg', 50, 1)
-	adjustHealth(maxHealth*0.05)
+	adjustHealth(maxHealth*0.1)
 
 /mob/living/simple_animal/hostile/venus_human_trap/Moved(atom/OldLoc, Dir)
 	. = ..()
